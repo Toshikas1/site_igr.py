@@ -1,0 +1,29 @@
+{% extends "main/base.html" %}
+
+{% block title %}Детали сессии — Site Igr{% endblock %}
+
+{% block content %}
+{% if error %}
+  <div class="card" style="text-align:center; padding:40px;">
+    <p>{{ error }}</p>
+  </div>
+{% else %}
+  <h1>Детали сессии</h1>
+  <div class="session-details card p-6">
+    <h2 class="session-game text-xl font-semibold mb-4">Игра: {{ session.game.name }}</h2>
+    <p class="session-created-at text-gray-600 mb-2">Дата создания: {{ session.created_at|date:"d.m.Y H:i" }}</p>
+    <p class="session-players text-gray-600 mb-2">Игроки:
+      {% for player in session.players.all %}
+        <span class="inline-block bg-gray-50 text-gray-600 px-3 py-1 rounded-full text-sm border border-gray-100">{{ player.username }}</span>
+      {% empty %}
+        Нет игроков
+      {% endfor %}
+    </p>
+    {% if session.winner %}
+      <p class="session-winner text-green-600 font-semibold">Победитель: {{ session.winner.username }}</p>
+    {% else %}
+      <p class="session-winner text-gray-600">Победитель не определён</p>
+    {% endif %}
+  </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends "main/base.html" %}
+
+{% block title %}Главная — Site Igr{% endblock %}
+
+{% block content %}
+{% if user.is_superuser %}
+    <div class="flex items-center justify-between mb-4">
+      <a href="{% url 'create_session' %}" class="btn btn-primary">Создать Сессию</a>
+    </div>
+{% endif %}
+    <form method="get" action="." class="search-form" style="margin:12px 0 18px; display:flex; gap:8px;">
+      <input type="search" name="q" placeholder="Фильтр по названию игры" value="{{ q|default:'' }}" style="flex:1; padding:8px 12px; border-radius:8px; border:1px solid rgba(15,23,42,0.06); background:#fff;" />
+      <button type="submit" class="btn btn-outline">Поиск</button>
+      <a href="." class="btn" style="background:transparent; border:1px solid rgba(0,0,0,0.06); color:var(--muted);">Сброс</a>
+    </form>
+    <div class="sessions-list space-y-4">
+      {% for session in sessions %}
+      <a href="{% url 'session_detail' session.id %}" class="block">
+      <div class="session-item w-full bg-white border border-gray-100 rounded-lg p-4 shadow-sm hover:shadow-md transition-transform transform hover:-translate-y-1">
+        <div class="session-thumb">
+          {% if session.game.image %}
+            <img src="{{ session.game.image.url }}" alt="{{ session.game.name }}" class="img-session" />
+          {% else %}
+            <div class="no-thumb">Нет изображения</div>
+          {% endif %}
+        </div>
+        <div class="session-body">
+          <div class="session-head" style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+            <h3 class="session-name text-lg font-semibold text-gray-800">{{ session.game.name }}</h3>
+            <div class="text-sm text-gray-500">{{ session.created_at|date:"d.m.Y H:i" }}</div>
+          </div>
+
+          <div class="mt-3 flex flex-wrap items-center gap-2">
+            <span class="inline-block bg-gray-50 text-gray-600 px-3 py-1 rounded-full text-sm border border-gray-100">{{ session.players.count }} игрок(ов)</span>
+            {% if session.winner %}
+              <span class="inline-block bg-amber-50 text-amber-700 px-3 py-1 rounded-full text-sm border border-amber-100">Победитель: {{ session.winner.username }}</span>
+            {% endif %}
+          </div>
+
+          <div class="mt-3 flex flex-wrap gap-2">
+            {% for p in session.players.all|slice:":6" %}
+              <span class="player-chip inline-block bg-white border border-gray-100 px-2 py-1 rounded text-sm text-gray-600">{{ p.username }}</span>
+            {% endfor %}
+            {% if session.players.count > 6 %}
+              <span class="player-chip inline-block bg-white border border-gray-100 px-2 py-1 rounded text-sm text-gray-600">+{{ session.players.count|add:"-6" }}</span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="card w-full text-center p-8 rounded bg-white border border-gray-100">
+        <p class="text-gray-600">Данные о сессиях еще не добавлены</p>
+      </div>
+    </a>
+      {% endfor %}
+    </div>
+
+{% endblock %}

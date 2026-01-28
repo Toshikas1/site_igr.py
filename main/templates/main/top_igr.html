@@ -1,0 +1,41 @@
+{% extends "main/base.html" %}
+{% load custom_filters %}
+
+{% block title %}Топ игр — Site Igr{% endblock %}
+
+{% block content %}
+<h1>🎲 Топ настольных игр</h1>
+<p class="subtitle">Рейтинг самых популярных и высокооценённых игр</p>
+
+<div class="games-leaderboard">
+  {% for game in games %}
+  <a href="{% url 'game_detail' game.id %}" class="block">
+  <div class="game-item game-rank-{{ game.rank }}">
+    <div class="game-rank">
+      <span class="rank-number">{{ game.rank }}</span>
+    </div>
+    {% if game.image %}
+      <img src="{{ game.image.url }}" alt="{{ game.name }}" class="game-thumb-img">
+    {% endif %}
+    <div class="game-info">
+      <h3 class="game-name">{{ game.name }}</h3> 
+      <p class="game-plays">Количество игр: <span class="plays-count">{{ game.played_games }}</span></p>
+    </div>
+    <div class="game-rating">
+      <div class="stars-container">
+        <div class="stars-fill" style="width: {{ game.rating|mul:10 }}%">
+          <span class="stars-text">★★★★★</span>
+        </div>
+        <span class="stars-bg">★★★★★</span>
+      </div>
+      <span class="rating-value">{{ game.rating }}/10</span>
+    </div>
+  </div>
+  {% empty %}
+  <div class="card" style="text-align:center; padding:40px;">
+    <p>Данные об играх еще не добавлены</p>
+  </div>
+  <a/>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Создать сессию{% endblock %}
+
+{% block content %}
+  <div class="auth-container">
+    <div class="auth-card session-card">
+      <h1 class="auth-title">Создать сессию</h1>
+      <p class="auth-subtitle">Заполните данные и добавьте участников</p>
+
+      {% if success %}
+        <div class="card" style="padding:12px; background:#ecfdf5; color:#065f46; margin-bottom:12px;">Сессия успешно создана</div>
+      {% endif %}
+
+      <form method="post">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+          <div class="form-errors">{{ form.non_field_errors }}</div>
+        {% endif %}
+        <div class="form-field">{{ form.title.label_tag }}{{ form.title }}</div>
+        <div class="form-field">{{ form.game.label_tag }}{{ form.game }}</div>
+        <div class="form-field">{{ form.players.label_tag }}
+          {% if form.players.errors %}
+            <div class="form-errors">{{ form.players.errors }}</div>
+          {% endif %}
+          <div class="form-players">
+            <ul>
+              {% for checkbox in form.players %}
+                <li>
+                  <label class="player-label">
+                    {{ checkbox.tag }}
+                    <span class="player-name">{{ checkbox.choice_label }}</span>
+                  </label>
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+        <div class="form-field">
+          {{ form.winner.label_tag }}{{ form.winner }}
+          {% if winner_error %}
+            <div class="form-errors">{{ winner_error }}</div>
+          {% endif %}
+          {% if form.winner.errors %}
+            <div class="form-errors">{{ form.winner.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Создать</button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

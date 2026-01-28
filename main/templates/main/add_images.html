@@ -1,0 +1,91 @@
+{% extends 'main/base.html' %}
+{% block title %}Добавить изображение — {{ game.name }}{% endblock %}
+
+{% block content %}
+  <h1 class="game-title">Добавить изображение для {{ game.name }}</h1>
+
+  <div class="card upload-card">
+    {% if success %}
+      <div class="success-message">✅ Изображение успешно добавлено</div>
+    {% endif %}
+    {% if error %}
+      <div class="error-message">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" id="uploadForm" class="upload-form">
+      {% csrf_token %}
+
+      <label for="id_image" class="dropzone" id="dropzone">
+        <input type="file" name="image" id="id_image" accept="image/*" class="file-input-hidden">
+        <div class="dz-content">
+          <p class="dz-title">Перетащите изображение сюда или нажмите, чтобы выбрать</p>
+          <p class="dz-sub">Рекомендуемый размер: 450×450 пикселей</p>
+        </div>
+        <img src="" alt="preview" class="preview" id="preview" style="display:none;">
+      </label>
+
+      <div class="form-actions">
+        <button class="btn btn-primary upload-btn" type="submit">Загрузить</button>
+        <button class="btn btn-outline cancel-btn" type="button" id="clearBtn">Очистить</button>
+      </div>
+    </form>
+
+    <h3 class="subtitle">Существующие изображения</h3>
+    <div class="image-grid">
+      {% for img in game.images.all %}
+        <div class="img-card">
+          <img src="{{ img.image.url }}" alt="Image for {{ game.name }}">
+        </div>
+      {% empty %}
+        <p class="subtitle">Изображений ещё нет.</p>
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  (function(){
+    const input = document.getElementById('id_image');
+    const preview = document.getElementById('preview');
+    const dropzone = document.getElementById('dropzone');
+    const clearBtn = document.getElementById('clearBtn');
+
+    function showPreview(file){
+      const reader = new FileReader();
+      reader.onload = function(e){
+        preview.src = e.target.result;
+        preview.style.display = 'block';
+        dropzone.classList.add('has-image');
+      }
+      reader.readAsDataURL(file);
+    }
+
+    input.addEventListener('change', function(e){
+      const file = e.target.files[0];
+      if (file) showPreview(file);
+    });
+
+    ['dragenter','dragover'].forEach(ev => {
+      dropzone.addEventListener(ev, function(e){ e.preventDefault(); dropzone.classList.add('dragover'); });
+    });
+    ['dragleave','drop'].forEach(ev => {
+      dropzone.addEventListener(ev, function(e){ e.preventDefault(); dropzone.classList.remove('dragover'); });
+    });
+
+    dropzone.addEventListener('drop', function(e){
+      const file = e.dataTransfer.files[0];
+      if (!file) return;
+      input.files = e.dataTransfer.files; // set files so the form submits
+      showPreview(file);
+    });
+
+    clearBtn.addEventListener('click', function(){
+      input.value = '';
+      preview.src = '';
+      preview.style.display = 'none';
+      dropzone.classList.remove('has-image');
+    });
+  })();
+</script>
+{% endblock %}

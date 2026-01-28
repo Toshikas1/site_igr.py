@@ -1,0 +1,237 @@
+{% extends "main/base.html" %}
+{% load custom_filters %}
+
+{% block title %}Детали игры — Site Igr{% endblock %}
+
+{% block content %}
+
+{% if error %}
+  <div class="card" style="text-align:center; padding:40px;">
+    <p>{{ error }}</p>
+    
+  </div>
+{% else %}
+    
+  <div class="session-details card p-6">
+    <h1 class="game-title">{{ game.name }}</h1>
+    <div class="game-rating">
+      <div class="stars-container">
+        <div class="stars-fill" style="width: {{ game.rating|mul:10 }}%">
+          <span class="stars-text">★★★★★</span>
+        </div>
+        <span class="stars-bg">★★★★★</span>
+      </div>
+      <span class="rating-value">{{ game.rating }}/10</span>
+    </div>
+
+    {# Slideshow: show all images related to this game #}
+    <div class="game-slideshow card">
+      {% if game.images.all %}
+        <div class="slides-wrap">
+          {% for img in game.images.all %}
+            <div class="slide{% if forloop.first %} active{% endif %}">
+              <img src="{{ img.image.url }}" alt="{{ game.name }} image {{ forloop.counter }}">
+            </div>
+          {% empty %}
+            <div class="slide active">
+              {% if game.image %}
+                <img src="{{ game.image.url }}" alt="{{ game.name }}">
+              {% else %}
+                <div class="no-image">Нет изображений</div>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+
+        <button class="prev" aria-label="Previous">❮</button>
+        <button class="next" aria-label="Next">❯</button>
+
+        <div class="dots">
+          {% for img in game.images.all %}
+            <span class="dot{% if forloop.first %} active{% endif %}" data-slide="{{ forloop.counter0 }}"></span>
+          {% empty %}
+            <span class="dot active" data-slide="0"></span>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="rating-card card" style="margin-top:12px; padding:14px;">
+      <div class="rating-row" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+        <div class="rating-buttons" role="radiogroup" aria-label="Оцените игру" style="display:flex; gap:6px; flex-wrap:wrap;">
+          {% for i in rating_range %}
+            <button class="rating-btn{% if user_rating == i %} selected{% endif %}" data-score="{{ i }}" type="button">{{ i }}</button>
+          {% endfor %}
+        </div>
+        <div style="font-weight:700; color:var(--muted); margin-left:8px;">Оцените игру</div>
+        <div class="rating-avg" style="margin-left:auto; font-weight:600; color:var(--accent);">Средняя оценка: <span id="avgRating">{{ game.rating }}</span>/10</div>
+      </div>
+      {% if not request.user.is_authenticated %}
+        <p class="subtitle" style="margin-top:8px;">Чтобы поставить оценку, <a href="{% url 'login' %}">войдите</a> или <a href="{% url 'register' %}">зарегистрируйтесь</a>.</p>
+      {% endif %}
+    </div>
+
+    <div class="game-description fullwidth">
+          {{ game.description|linebreaks }}
+    </div>
+    <div class="top-players card" style="margin-top:12px; padding:14px;">
+      <div class="top-players-header" role="button" tabindex="0" aria-expanded="true">
+        <h3 class="top-players-title">Топ игроков по этой игре</h3>
+        <button class="toggle-btn" aria-label="Показать/Свернуть топ игроков">▾</button>
+      </div>
+      {% if user_stats %}
+        <div class="top-players-panel" data-collapsed="false">
+          <div class="leaderboard">
+            {% for s in user_stats %}
+              <a href="{% url 'player_detail' s.user.id game.id %}">
+                <div class="rank-item rank-{{ s.rank }} top-entry">
+                  <div class="rank-badge">{% if s.rank == 1 %}🥇{% elif s.rank == 2 %}🥈{% elif s.rank == 3 %}🥉{% else %}{{ s.rank }}{% endif %}</div>
+                  <div class="player-info">
+                    <h3 class="player-name">{{ s.user.username }}</h3>
+                  </div>
+                  <div class="player-stats">
+                    <div class="stat-item">
+                      <span class="stat-label">Побед:</span>
+                      <span class="stat-value percent-badge">{{ s.games_won }}</span>
+                      <span class="stat-label">Процент побед:</span>
+                      <span class="stat-value percent-badge">{{ s.win_rate }}%</span>
+                    </div>
+                  </div>
+                </div>
+              </a>
+            {% endfor %}
+          </div>
+        </div>
+      {% else %}
+        <p>Пока нет статистики игроков для этой игры.</p>
+      {% endif %}
+    </div>
+    <div class="game-detail">
+      <div class="game-detail-right">
+      </div>
+    </div>
+    {% if request.user.is_superuser %}
+    <a href="{% url 'add_images' game.id %}" class="btn btn-outline">Добавить Картинку</a>
+    {% endif %}
+
+  </div>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+<script>
+  (function(){
+    const slideshow = document.querySelector('.game-slideshow');
+    if(!slideshow) return;
+    const slides = Array.from(slideshow.querySelectorAll('.slide'));
+    const prev = slideshow.querySelector('.prev');
+    const next = slideshow.querySelector('.next');
+    const dots = Array.from(slideshow.querySelectorAll('.dot'));
+    let idx = slides.findIndex(s => s.classList.contains('active'));
+    if(idx < 0) idx = 0;
+
+    function show(i){
+      slides.forEach(s => s.classList.remove('active'));
+      dots.forEach(d => d.classList.remove('active'));
+      const clamped = (i + slides.length) % slides.length;
+      slides[clamped].classList.add('active');
+      if(dots[clamped]) dots[clamped].classList.add('active');
+      idx = clamped;
+    }
+
+    if(prev) prev.addEventListener('click', e => show(idx-1));
+    if(next) next.addEventListener('click', e => show(idx+1));
+    dots.forEach((d, i) => d.addEventListener('click', () => show(i)));
+
+    // optional: auto-advance every 5s
+    let auto = setInterval(()=> show(idx+1), 5000);
+    slideshow.addEventListener('mouseenter', ()=> clearInterval(auto));
+    slideshow.addEventListener('mouseleave', ()=> auto = setInterval(()=> show(idx+1), 5000));
+  })();
+
+  (function(){
+    // Rating buttons: send AJAX POST to submit user's rating
+    const buttons = Array.from(document.querySelectorAll('.rating-btn'));
+    if(!buttons.length) return;
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+          const cookies = document.cookie.split(';');
+          for (let i = 0; i < cookies.length; i++) {
+              const cookie = cookies[i].trim();
+              if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                  cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                  break;
+              }
+          }
+      }
+      return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+    const avgEl = document.getElementById('avgRating');
+
+    function setSelected(val){
+      buttons.forEach(b => {
+        if(parseInt(b.dataset.score,10) === val) b.classList.add('selected'); else b.classList.remove('selected');
+      });
+    }
+
+    buttons.forEach(b => b.addEventListener('click', async function(){
+      const score = this.dataset.score;
+      try{
+        const res = await fetch(window.location.href, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrftoken,
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: 'rating=' + encodeURIComponent(score)
+        });
+        if(res.status === 403){
+          alert('Пожалуйста, войдите, чтобы оценить игру.');
+          return;
+        }
+        const data = await res.json();
+        if(data.error){
+          alert('Ошибка: ' + data.error);
+          return;
+        }
+        setSelected(parseInt(data.user_rating,10));
+        if(avgEl) avgEl.textContent = data.avg;
+      }catch(err){
+        console.error(err);
+      }
+    }));
+  })();
+
+  (function(){
+    // Collapsible top-players panel
+    const header = document.querySelector('.top-players-header');
+    const panel = document.querySelector('.top-players-panel');
+    if(!header || !panel) return;
+    const toggleBtn = header.querySelector('.toggle-btn');
+
+    function setCollapsed(collapsed){
+      if(collapsed){
+        panel.classList.add('collapsed');
+        header.setAttribute('aria-expanded', 'false');
+      } else {
+        panel.classList.remove('collapsed');
+        header.setAttribute('aria-expanded', 'true');
+      }
+    }
+
+    // initialize (panel may contain content, keep expanded by default)
+    setCollapsed(false);
+
+    function toggle(){
+      const isCollapsed = panel.classList.contains('collapsed');
+      setCollapsed(!isCollapsed);
+    }
+
+    header.addEventListener('click', toggle);
+    header.addEventListener('keydown', (e) => { if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+    if(toggleBtn) toggleBtn.addEventListener('click', (e) => { e.preventDefault(); toggle(); });
+  })();
+</script>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends "main/base.html" %}
+{% load custom_filters %}
+
+{% block title %}Профиль {{ player.username }} — Site Igr{% endblock %}
+
+{% block content %}
+{% if error %}
+  <div class="card" style="text-align:center; padding:40px;">
+    <p>{{ error }}</p>
+  </div>
+{% else %}
+  <div class="session-details card p-6 player-detail-card">
+    <div class="player-header" style="display:flex; align-items:center; justify-content:space-between; gap:20px;">
+      <div class="player-info">
+        <h1 class="player-name">{{ player.username }}</h1>
+        <p class="player-position">Зарегистрирован: {{ player.date_joined|date:"d M Y" }}</p>
+      </div>
+      <div class="player-stats">
+        <div class="stat-item">
+          <div class="stat-label">Всего игр</div>
+          <div class="stat-value">{{ total_played }}</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Побед</div>
+          <div class="stat-value wins-count">{{ total_won }}</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Процент побед</div>
+          <div class="stat-value">{{ win_rate }}%</div>
+        </div>
+      </div>
+    </div>
+
+    <hr style="margin:18px 0; border-color: rgba(15,23,42,0.06)">
+
+    <h2 class="subtitle">Статистика по играм</h2>
+
+    {% if stats %}
+      <table class="stats-table">
+        <thead>
+          <tr>
+            <th>Игра</th>
+            <th>Игры</th>
+            <th>Победы</th>
+            <th>Процент</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in stats %}
+            <tr>
+              <td data-label="Игра"><a href="{% url 'game_detail' s.game.id %}">{{ s.game.name }}</a></td>
+              <td data-label="Игры" class="numeric">{{ s.games_played }}</td>
+              <td data-label="Победы" class="numeric">{{ s.games_won }}</td>
+              <td data-label="Процент" class="numeric"><span class="percent-badge">{{ s.win_rate }}%</span></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="stats-empty">Статистики по играм пока нет.</p>
+    {% endif %}
+
+  </div>
+{% endif %}
+{% endblock %}

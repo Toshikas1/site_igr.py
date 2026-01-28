@@ -1,0 +1,73 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Создать игру{% endblock %}
+
+{% block content %}
+  <div class="auth-container">
+    <div class="auth-card">
+      <h1 class="auth-title">Создать игру</h1>
+      <p class="auth-subtitle">Заполните данные игры и загрузите изображение</p>
+
+      {% if success %}
+        <div class="card" style="padding:12px; background:#ecfdf5; color:#065f46; margin-bottom:12px;">Игра успешно создана</div>
+      {% endif %}
+
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+          <div class="form-errors">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="form-field">
+          {{ form.name.label_tag }}
+          {{ form.name }}
+          {% if form.name.errors %}<div class="form-errors">{{ form.name.errors }}</div>{% endif %}
+        </div>
+
+        <div class="form-field">
+          {{ form.description.label_tag }}
+          {{ form.description }}
+          {% if form.description.errors %}<div class="form-errors">{{ form.description.errors }}</div>{% endif %}
+        </div>
+
+        <div class="form-field">
+          {{ form.rating.label_tag }}
+          {{ form.rating }}
+          {% if form.rating.errors %}<div class="form-errors">{{ form.rating.errors }}</div>{% endif %}
+        </div>
+
+        <div class="form-field">
+          {{ form.image.label_tag }}
+          {{ form.image }}
+          {% if form.image.errors %}<div class="form-errors">{{ form.image.errors }}</div>{% endif %}
+          <div class="image-preview" aria-hidden="true"></div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Создать игру</button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  (function(){
+    const fileInput = document.querySelector('.form-field input[type=file]');
+    const preview = document.querySelector('.image-preview');
+    if(!fileInput || !preview) return;
+    fileInput.addEventListener('change', e => {
+      preview.innerHTML = '';
+      const file = e.target.files[0];
+      if(!file) return;
+      const img = document.createElement('img');
+      img.src = URL.createObjectURL(file);
+      img.onload = () => URL.revokeObjectURL(img.src);
+      img.style.maxWidth = '100%';
+      img.style.borderRadius = '8px';
+      preview.appendChild(img);
+    });
+  })();
+</script>
+{% endblock %}

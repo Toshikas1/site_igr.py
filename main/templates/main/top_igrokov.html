@@ -1,0 +1,32 @@
+{% extends "main/base.html" %}
+
+{% block title %}Топ игроков — Site Igr{% endblock %}
+
+{% block content %}
+<h1>🏆 Топ игроков</h1>
+<p class="subtitle">Рейтинг лучших игроков в настольные игры</p>
+
+<div class="leaderboard">
+  {% for player in players %}
+  <a href="{% url 'player_detail' player.id %}">
+  <div class="rank-item rank-{{ player.rank }}">
+    <div class="rank-badge">{% if player.rank == 1 %}🥇{% elif player.rank == 2 %}🥈{% elif player.rank == 3 %}🥉{% else %}{{ player.rank }}{% endif %}</div>
+    <div class="player-info">
+      <h3 class="player-name">{{ player.username }}</h3>
+      <p class="player-position">Место: <span class="position-number">#{{ player.rank }}</span></p>
+    </div>
+    <div class="player-stats">
+      <div class="stat-item">
+        <span class="stat-label">Побед:</span>
+        <span class="stat-value wins-count">{{ player.wins }}</span>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="card" style="text-align:center; padding:40px;">
+    <p>Данные об игроках еще не добавлены</p>
+  </div>
+</a>
+  {% endfor %}
+</div>
+{% endblock %}
