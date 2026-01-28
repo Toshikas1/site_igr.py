@@ -154,6 +154,7 @@ def player_detail(request, player_id, game_id=None):
     else:
         stats_qs = player.game_stats.select_related('game').all()
 
+
     # materialize queryset to compute aggregates and add per-row win rate
     stats = list(stats_qs)
     total_played = sum(s.games_played for s in stats)
