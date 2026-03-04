@@ -30,7 +30,7 @@
         <div class="slides-wrap">
           {% for img in game.images.all %}
             <div class="slide{% if forloop.first %} active{% endif %}">
-              <img src="{{ img.image.url }}" alt="{{ game.name }} image {{ forloop.counter }}">
+              <img src="{% url "img_compile" img.id %}" alt="{{ game.name }} image {{ forloop.counter }}">
             </div>
           {% empty %}
             <div class="slide active">

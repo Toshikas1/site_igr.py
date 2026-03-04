@@ -36,6 +36,7 @@ class SessionForm(forms.ModelForm):
         return cleaned
 
 class GameForm(forms.ModelForm):
+    image = forms.FileField()
     class Meta:
         model = Games
         fields = ['name', 'description', 'rating', 'image']
@@ -54,11 +55,32 @@ class GameForm(forms.ModelForm):
         if name and description and rating is not None and image:
             return cleaned
         raise ValidationError({"name": "Пожалуйста, заполните все поля формы."})
+    def save(self, commit = True):
+        form_obj = super().save(commit = False)
+        img_file = self.cleaned_data.get("image")
+        if img_file:
+            form_obj.image = img_file.read()
+        if commit:
+            form_obj.save()
+        return form_obj
+
+
+
 
 class GameImageForm(forms.ModelForm):
+    image = forms.FileField()
     class Meta:
         model = GameImage
         fields = ['image']
         widgets = {
             'image': forms.ClearableFileInput(attrs={'class': 'form-input'}),
         }
+    def save(self,commit = True):
+        obj = super().save(commit = False)
+        img_file = self.cleaned_data.get("image")
+        if img_file:
+            obj.image = img_file.read()
+        if commit:
+            obj.save()
+        return obj
+

@@ -5,6 +5,8 @@ from django.db.models import Avg
 from main.models import Games, Session, UserGameStats, GameRating
 from .forms import GameImageForm
 from django.contrib.auth.decorators import user_passes_test
+from .models import GameImage
+from django.http import HttpResponse
 User = get_user_model()
 # Create your views here.
 def main(request):
@@ -177,9 +179,19 @@ def add_images(request, game_id):
         if form.is_valid():
             image_obj = form.save(commit=False)
             image_obj.game = game
-            image_obj.save()
+            game_image = image_obj.save()
             return render(request, "main/add_images.html", {"form": GameImageForm(), "success": True, "game": game})
     else:
         form = GameImageForm()
 
     return render(request, "main/add_images.html", {"form": form, "game": game})
+
+def img_compile(request, img_id):
+    
+    img = GameImage.objects.get(id = img_id).image
+    return HttpResponse(img, content_type = "image/jpeg")
+
+def img_compile_top(request, img_id):
+    
+    img = Games.objects.get(id = img_id).image
+    return HttpResponse(img, content_type = "image/jpeg")

@@ -12,7 +12,7 @@ class Games(models.Model):
     played_games = models.IntegerField(default=0)
     description = models.TextField(blank=True)
     rating = models.FloatField(default=0.0)
-    image = models.ImageField(upload_to='images/', blank=True, null=True)
+    image = models.BinaryField(editable=True, null=True, blank=True, default=None)
     def __str__(self):
         return self.name
 
@@ -32,16 +32,16 @@ class GameImage(models.Model):
         on_delete=models.CASCADE,
         related_name='images'
     )
-    image = models.ImageField(upload_to='games/')
+    image = models.BinaryField(editable=True)
     def __str__(self):
         return f"Image for {self.game.name}"
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        img = Image.open(self.image.path)
-        if img.height != 450 or img.width != 450:
-            output_size = (450, 450)
-            img = img.resize(output_size, Image.LANCZOS)
-            img.save(self.image.path)
+    # def save(self, *args, **kwargs):
+    #     super().save(*args, **kwargs)
+    #     img = Image.open(self.image.path)
+    #     if img.height != 450 or img.width != 450:
+    #         output_size = (450, 450)
+    #         img = img.resize(output_size, Image.LANCZOS)
+    #         img.save(self.image.path)
 
             
 class UserGameStats(models.Model):

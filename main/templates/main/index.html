@@ -3,6 +3,7 @@
 {% block title %}Главная — Site Igr{% endblock %}
 
 {% block content %}
+<h1>Новое изменение</h1>
 {% if user.is_superuser %}
     <div class="flex items-center justify-between mb-4">
       <a href="{% url 'create_session' %}" class="btn btn-primary">Создать Сессию</a>
@@ -19,7 +20,7 @@
       <div class="session-item w-full bg-white border border-gray-100 rounded-lg p-4 shadow-sm hover:shadow-md transition-transform transform hover:-translate-y-1">
         <div class="session-thumb">
           {% if session.game.image %}
-            <img src="{{ session.game.image.url }}" alt="{{ session.game.name }}" class="img-session" />
+            <img src="{% url "img_compile_top" session.game_id %}" alt="{{ session.game.name }}" class="img-session" />
           {% else %}
             <div class="no-thumb">Нет изображения</div>
           {% endif %}

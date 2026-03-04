@@ -15,7 +15,7 @@
       <span class="rank-number">{{ game.rank }}</span>
     </div>
     {% if game.image %}
-      <img src="{{ game.image.url }}" alt="{{ game.name }}" class="game-thumb-img">
+      <img src="{% url "img_compile_top" game.id %}" alt="{{ game.name }}" class="game-thumb-img">
     {% endif %}
     <div class="game-info">
       <h3 class="game-name">{{ game.name }}</h3> 
